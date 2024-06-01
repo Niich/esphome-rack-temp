@@ -1,0 +1,30 @@
+esphome:
+  name: acculevel-modbus
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "password123"
+
+ota:
+  password: "password123"
+
+wifi:
+  ssid: !secrets wifi_ssid
+  password: !secrets wifi_pass
+  domain: !secrets iot_domain
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Acculevel-Modbus"
+    password: "pEik53pvVPwr"
+
+captive_portal:
+    
