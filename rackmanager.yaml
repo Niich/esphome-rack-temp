@@ -1,8 +1,8 @@
 esphome:
   name: rack-monitor
 
-esp8266:
-  board: d1_mini
+esp32:
+  board: esp32doit-devkit-v1
 
 # Enable logging
 logger:
@@ -21,7 +21,7 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Rack-Monitor Fallback Hotspot"
+    ssid: "Rack-Manager Fallback Hotspot"
     password: "uEwcFyhdiRbe"
 
 captive_portal:
@@ -30,14 +30,16 @@ web_server:
   port: 80
 
 switch:
+  # - platform: gpio
+  #   id: builtIn_led
+  #   name: "Built In Led"
+  #   pin:
+  #     number: GPIO02 # PIIO_NONE
+  #     inverted: True
   - platform: gpio
-    id: builtIn_led
-    name: "Built In Led"
     pin:
-      number: D4
+      number: GPIO02 # PIIO_NONE
       inverted: True
-  - platform: gpio
-    pin: D0
     id: ntc_vcc
 #######
 sensor:
@@ -61,58 +63,35 @@ sensor:
   - platform: adc
     id: source_sensor
     filters:
-      - offset: -0.032
+      - offset: -0.035
       # - offset: -0.042
       - multiply: 3.3
-    pin: A0
+    pin: GPIO35 # A7 # PIIO24
     update_interval: never
 
   - platform: template
     name: Temperature F
     id: temperature_f
     lambda: return id(ntc_1).state * 9/5+32;
-    update_interval: never
-    unit_of_measurement: '°F'
+    update_interval: 1s
 
 interval:
-  - interval: 2s
+  - interval: 1s
     then:
       - switch.turn_on: ntc_vcc
       - component.update: source_sensor
-      - component.update: temperature_f
       - switch.turn_off: ntc_vcc
 
 output:
-  - platform: esp8266_pwm
+  - platform: ledc
     id: motor_forward_pin
-    frequency: 30000 Hz
-    # inverted: true
-    pin: D5
-  - platform: esp8266_pwm
+    pin: GPIO14
+  - platform: ledc
     id: motor_reverse_pin
-    frequency: 30000 Hz
-    # inverted: true
-    pin: D7
-
-# servo:
-#   - id: my_servo
-#     output: motor_forward_pin
-#     min_level: 40%
-#     max_level: 100%
-
-# number:
-#   - platform: template
-#     name: Servo Control
-#     min_value: -100
-#     initial_value: 0
-#     max_value: 100
-#     step: 1
-#     optimistic: true
-#     set_action:
-#       then:
-#         - servo.write:
-#             id: my_servo
-#             level: !lambda 'return x / 100.0;'
+    pin: GPIO27
+  - platform: ledc
+    id: motor_speed_pin
+    pin: GPIO12
 
 # Fan configuration entry
 fan:
@@ -121,4 +100,5 @@ fan:
     name: "Intake Fan"
     pin_a: motor_forward_pin # A16 # 14 / PI 05
     pin_b: motor_reverse_pin # 26 / PI 26 
+    enable_pin: motor_speed_pin # 12 / PI 06 
     decay_mode: slow   # slow decay mode (coasting) or fast decay (braking).

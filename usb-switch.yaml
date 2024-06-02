@@ -1,0 +1,65 @@
+esphome:
+  name: rack-monitor
+
+esp8266:
+  board: d1_mini
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "password123"
+
+ota:
+  password: "password123"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  domain: !secret iot_domain
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Rack-Monitor Fallback Hotspot"
+    password: "uEwcFyhdiRbe"
+
+captive_portal:
+
+web_server:
+  port: 80
+
+switch:
+  - platform: gpio
+    id: builtIn_led
+    name: "Built In Led"
+    pin:
+      number: D4
+      inverted: True
+
+  - platform: gpio
+    pin: D5
+    id: switch_d5
+    name: "PC1"
+    on_turn_on:
+      - delay: 300ms
+      - switch.turn_off: switch_d5
+    # interlock: &interlock_group [switch_d5, switch_d6, switch_d7]
+  - platform: gpio
+    pin: D6
+    id: switch_d6
+    name: "PC2"
+    on_turn_on:
+      - delay: 300ms
+      - switch.turn_off: switch_d6
+    # interlock: *interlock_group
+  - platform: gpio
+    pin: D7
+    id: switch_d7
+    name: "PC3"
+    on_turn_on:
+      - delay: 300ms
+      - switch.turn_off: switch_d7
+    # interlock: *interlock_group
+
+sensor:
